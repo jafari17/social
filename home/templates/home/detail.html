@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if request.user.id == post.user.id %}
+        <a href="{% url 'home:post_delete' post.id %}" class="btn btn-danger">Delete</a>
+        <a href="{% url 'home:post_update' post.id %}" class="btn btn-info">Update</a>
+    {% endif %}
+
+    <p><a href="{% url 'account:user_profile' post.user.id %}" >{{ post.user.username }}</a> - {{ post.updated | date:" Y - M - d " }}</p>
+    <p class="card-body">{{ post.body }}</p><hr/>
+
+    {% if request.user.is_authenticated %}
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="send">
+        </form>
+    {% else %}
+        <p class="alert alert-danger"> fagat kasani ke login kardan mitonan comment begzaran</p>
+    {% endif %} <br/>
+
+
+
+
+    {% for comment in comments %}
+        <div class="card bg-dark text-white">
+        <p class="card-header">{{ comment.user }} | {{ comment.created|timesince }}</p>
+        <p class="card-body">{{ comment.body }}</p>
+
+        {% if request.user.is_authenticated %}
+            <form action="{% url 'home:add_reply' post.id comment.id %}" method="post" style="display: none">
+                {% csrf_token %}
+                {{ form_reply.as_p }}
+                <input type="submit" value="send">
+            </form>
+        {% endif %}
+
+{#        {% with replies = comment.rcomments.all %} #}
+            {% for reply in comment.rcomments.all  %} {#  replies #}
+                <p class="bg-white text-dark p-2 m-2 "> {{ reply.user }} <br/> {{ reply.body }} </p>
+            {% endfor %}
+{#        {% endwith %}#}
+        </div><br/>
+    {% empty %}
+        <p class="card-body  bg-dark text-white">comment nadard</p>
+    {% endfor %}
+
+{% endblock %}
